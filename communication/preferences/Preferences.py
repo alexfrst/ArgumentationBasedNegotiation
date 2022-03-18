@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import sys
+sys.path.append("../mesa")
+
 from communication.preferences.CriterionName import CriterionName
 from communication.preferences.CriterionValue import CriterionValue
 from communication.preferences.Item import Item
@@ -67,16 +70,17 @@ class Preferences:
         """Returns the most preferred item from a list.
         """
         # To be completed
-        return best_item
+        return max(item_list, key=lambda x:x.get_score(self))
 
-    def is_item_among_top_10_percent(self, item):
+    def is_item_among_top_10_percent(self, item, item_list):
         """
         Return whether a given item is among the top 10 percent of the preferred items.
 
         :return: a boolean, True means that the item is among the favourite ones
         """
         # To be completed
-        return is_top_item
+        top_10_percent = sorted(item_list,key=lambda x:x.get_score(self), reverse=True)[:(max(len(item_list),10)//10)]
+        return item in top_10_percent
 
 
 if __name__ == '__main__':
@@ -121,3 +125,5 @@ if __name__ == '__main__':
     print('Electric Engine (for agent 1) = {}'.format(electric_engine.get_score(agent_pref)))
     print('Diesel Engine (for agent 1) = {}'.format(diesel_engine.get_score(agent_pref)))
     print('Most preferred item is : {}'.format(agent_pref.most_preferred([diesel_engine, electric_engine]).get_name()))
+    print('Diesel engine in top 10 percent : {}'.format(agent_pref.is_item_among_top_10_percent(diesel_engine, [diesel_engine, electric_engine])))
+    print('Electric engine in top 10 percent : {}'.format(agent_pref.is_item_among_top_10_percent(electric_engine, [diesel_engine, electric_engine])))

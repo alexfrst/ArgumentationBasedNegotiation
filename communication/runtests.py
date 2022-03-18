@@ -3,7 +3,7 @@
 Testing all the functionalities of the communication package.
 """
 import sys
-sys.path.append('../mesa')
+sys.path.append("../mesa")
 
 from mesa import Model
 from mesa.time import RandomActivation
