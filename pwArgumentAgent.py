@@ -36,15 +36,16 @@ class ArgumentAgent(CommunicatingAgent):
 
         for message in list_messages:
             print(message)
+            content = message.get_content()
+
             if message.get_performative() == MessagePerformative.PROPOSE:
-                content = message.get_content()
 
                 if self.preference.is_item_among_top_10_percent(content, self.item_list):
 
                     if (content.get_name() == self.preference.most_preferred(self.item_list).get_name()):
 
                         print(f"{self.get_name()} is accepting {content.get_name()}")
-                        self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ACCEPT, "Whith pleasure"))
+                        self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ACCEPT, content))
 
                     else:
                         print(f"{self.get_name()} propose something else : {self.preference.most_preferred(self.item_list)}")
@@ -54,15 +55,17 @@ class ArgumentAgent(CommunicatingAgent):
 
                 else:
                     print(f"{self.get_name()} is rejecting {content.get_name()}")
-                    self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ASK_WHY, "Why ?"))
+                    self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ASK_WHY, content))
 
             if message.get_performative() == MessagePerformative.ACCEPT:
                 print(f"{self.get_name()} is commiting.")
-                self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.COMMIT, "Well received"))
+                self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.COMMIT, content))
 
             if message.get_performative() == MessagePerformative.COMMIT:
+                if content.get_name() in [it.get_name() for it in self.item_list]:
+                    self.item_list = list(filter(lambda x: x.get_name() != content.get_name(), self.item_list))
                 print(f"{self.get_name()} is commiting.")
-                self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.COMMIT, "Well received 2"))
+                self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.COMMIT, content))
 
 
 
@@ -128,7 +131,7 @@ if __name__ == '__main__':
     # alice.send_message(m1)
     # bob.send_message(m2)
     step = 0
-    while step < 3:
+    while step < 10:
         argument_model.step()
         step += 1
 
