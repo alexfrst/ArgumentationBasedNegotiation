@@ -38,12 +38,31 @@ class ArgumentAgent(CommunicatingAgent):
             print(message)
             if message.get_performative() == MessagePerformative.PROPOSE:
                 content = message.get_content()
+
                 if self.preference.is_item_among_top_10_percent(content, self.item_list):
-                    print(f"{self.get_name()} is accepting {content.get_name()}")
-                    self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ACCEPT, "Whith pleasure"))
+
+                    if (content.get_name() == self.preference.most_preferred(self.item_list).get_name()):
+
+                        print(f"{self.get_name()} is accepting {content.get_name()}")
+                        self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ACCEPT, "Whith pleasure"))
+
+                    else:
+                        print(f"{self.get_name()} propose something else : {self.preference.most_preferred(self.item_list)}")
+                        self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.PROPOSE, self.preference.most_preferred(self.item_list)))
+
+                        
+
                 else:
                     print(f"{self.get_name()} is rejecting {content.get_name()}")
                     self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ASK_WHY, "Why ?"))
+
+            if message.get_performative() == MessagePerformative.ACCEPT:
+                print(f"{self.get_name()} is commiting.")
+                self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.COMMIT, "Well received"))
+
+            if message.get_performative() == MessagePerformative.COMMIT:
+                print(f"{self.get_name()} is commiting.")
+                self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.COMMIT, "Well received 2"))
 
 
 
@@ -93,7 +112,7 @@ class ArgumentModel(Model):
 if __name__ == '__main__':
     # Init the model and the agents
     argument_model = ArgumentModel()
-    MessageService.get_instance().set_instant_delivery(False)
+    MessageService.get_instance().set_instant_delivery(True)
 
     alice = ArgumentAgent(0, argument_model, "Alice")
     alice.generate_preferences([])
@@ -109,7 +128,7 @@ if __name__ == '__main__':
     # alice.send_message(m1)
     # bob.send_message(m2)
     step = 0
-    while step < 2:
+    while step < 3:
         argument_model.step()
         step += 1
 
