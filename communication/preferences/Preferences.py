@@ -80,7 +80,7 @@ class Preferences:
         """
         # To be completed
         top_10_percent = sorted(item_list,key=lambda x:x.get_score(self), reverse=True)[:(max(len(item_list),10)//10)]
-        return item in top_10_percent
+        return item.get_name() in [it.get_name() for it in top_10_percent]
 
 
 if __name__ == '__main__':
