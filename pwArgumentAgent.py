@@ -36,8 +36,14 @@ class ArgumentAgent(CommunicatingAgent):
 
         for message in list_messages:
             print(message)
-            #self.send_message(Message(self.get_name(),other, MessagePerformative.PROPOSE, self.preference))
-            list_messages = self.get_new_messages()
+            if message.get_performative() == MessagePerformative.PROPOSE:
+                content = message.get_content()
+                if self.preference.is_item_among_top_10_percent(content, self.item_list):
+                    print(f"{self.get_name()} is accepting {content.get_name()}")
+                    self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ACCEPT, "Whith pleasure"))
+                else:
+                    print(f"{self.get_name()} is rejecting {content.get_name()}")
+                    self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ASK_WHY, "Why ?"))
 
 
 
@@ -103,7 +109,7 @@ if __name__ == '__main__':
     # alice.send_message(m1)
     # bob.send_message(m2)
     step = 0
-    while step < 3:
+    while step < 2:
         argument_model.step()
         step += 1
 
