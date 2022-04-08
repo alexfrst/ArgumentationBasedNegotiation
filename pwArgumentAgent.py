@@ -11,6 +11,8 @@ from communication.message.MessageService import MessageService
 from communication.preferences.Preferences import Preferences, CriterionName, CriterionValue, Value
 from communication.preferences.Item import Item
 
+from arguments import Argument
+
 
 class ArgumentAgent(CommunicatingAgent):
     """
@@ -88,6 +90,23 @@ class ArgumentAgent(CommunicatingAgent):
         self.item_list = items
         self.preference = agent_pref
         return items, agent_pref
+
+    def support_proposal (self , item ):
+        """
+        Used when the agent receives " ASK_WHY " after having proposed an item
+        : param item : str - name of the item which was proposed
+        : return : string - the strongest supportive argument
+        """
+
+        # To be completed
+        argument = Argument(True, item)
+
+        supportive_argument = argument.list_supporting_proposal(item, self.get_preference())
+        if len(supportive_argument) > 0:
+            return supportive_argument[0].get_name()
+        
+        else:
+            return ""
 
 
 class ArgumentModel(Model):
