@@ -24,7 +24,7 @@ class Argument:
         """Creates a new Argument ."""
         # To be completed
         self.boolean_decision = boolean_decision
-        self.item = item.get_name()
+        self.item = item if isinstance(item, str) else item.get_name()
         self.comparison_list = []
         self.couple_values_list = []
         self.list_of_arguments = self.comparison_list.append(self.couple_values_list)
