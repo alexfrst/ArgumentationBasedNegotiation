@@ -28,7 +28,6 @@ class Argument:
         self.comparison_list = []
         self.couple_values_list = []
         self.list_of_arguments = self.comparison_list.append(self.couple_values_list)
-        self.argument = (self.item, self.comparison_list, self.list_of_arguments)
 
     def add_premiss_comparison(self, criterion_name_1, criterion_name_2):
         """Adds a premiss comparison in the comparison list ."""
@@ -52,7 +51,7 @@ class Argument:
         for criterion in preferences.get_criterion_name_list():
             item_value = preferences.get_value(item, criterion)
             if item_value in [Value.GOOD, Value.VERY_GOOD]:
-                supporting_proposal.append(criterion)
+                supporting_proposal.append((criterion, item_value))
         return supporting_proposal
 
     def list_attacking_proposal(self, item, preferences: Preferences):

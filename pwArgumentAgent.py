@@ -104,13 +104,32 @@ class ArgumentAgent(CommunicatingAgent):
 
         # To be completed
         argument = Argument(True, item)
-
         supportive_argument = argument.list_supporting_proposal(item, self.get_preference())
+
+        for criterion, value in supportive_argument:
+            argument.add_premiss_couple_values((criterion.name, value.name))
+
         if len(supportive_argument) > 0:
             return supportive_argument[0].name
         
         else:
             return ""
+
+    def argument_parsing(self, argument):
+        return ((argument.boolean_decision, argument.item, argument.couple_values_list[0]))
+
+
+
+    def attack_argument(self, argument):
+
+        boolean_decision, item, best_argument = self.argument_parsing(argument)
+        criterion, value = best_argument
+
+        if boolean_decision:
+
+            #if the criterion is not important for him
+            print("a faire")
+
 
 
 class ArgumentModel(Model):
