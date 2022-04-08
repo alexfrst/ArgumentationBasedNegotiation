@@ -56,9 +56,25 @@ class Argument:
                 supporting_proposal.append(criterion)
         return supporting_proposal
 
+    def list_attacking_proposal(self, item, preferences: Preferences):
+        """
+        Generate a list of premisses which can be used to support an item
+        : param item : Item - name of the item
+        : return : list of all premisses PRO an item ( sorted by order of importance
+        based on agent 's preferences )
+        """
+        supporting_proposal = []
+
+        for criterion in preferences.get_criterion_name_list():
+            item_value = preferences.get_value(item, criterion)
+            if item_value in [Value.BAD, Value.VERY_BAD]:
+                supporting_proposal.append(criterion)
+        return supporting_proposal
+
 if __name__ == "__main__":
     argument_model = ArgumentModel()
     alice = ArgumentAgent(0, argument_model, "Alice")
     alice.generate_preferences([])
     argument = Argument(True, alice.item_list[0])
     print([crit for crit in argument.list_supporting_proposal("Electric Engine",  alice.get_preference())])
+    print([crit for crit in argument.list_attacking_proposal("Electric Engine",  alice.get_preference())])
