@@ -11,7 +11,7 @@ from communication.message.MessageService import MessageService
 from communication.preferences.Preferences import Preferences, CriterionName, CriterionValue, Value
 from communication.preferences.Item import Item
 
-from arguments import Argument
+from arguments.Argument import Argument
 
 
 class ArgumentAgent(CommunicatingAgent):
@@ -33,7 +33,7 @@ class ArgumentAgent(CommunicatingAgent):
         list_messages = self.get_new_messages()
         other = [agent.get_name() for agent in self.model.schedule.agents if agent.get_name() != self.get_name()][0]
 
-        if len(list_messages)==0:
+        if len(list_messages)==0 and self.get_name() == "Alice":
             self.send_message(Message(self.get_name(), other, MessagePerformative.PROPOSE, self.preference.most_preferred(self.item_list)))
 
         for message in list_messages:
@@ -46,7 +46,6 @@ class ArgumentAgent(CommunicatingAgent):
 
                     if (content.get_name() == self.preference.most_preferred(self.item_list).get_name()):
 
-                        print(f"{self.get_name()} is accepting {content.get_name()}")
                         self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ACCEPT, content))
 
                     else:
@@ -56,19 +55,24 @@ class ArgumentAgent(CommunicatingAgent):
                         
 
                 else:
-                    print(f"{self.get_name()} is rejecting {content.get_name()}")
                     self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ASK_WHY, content))
 
             if message.get_performative() == MessagePerformative.ACCEPT:
-                print(f"{self.get_name()} is commiting.")
                 self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.COMMIT, content))
 
             if message.get_performative() == MessagePerformative.COMMIT:
                 if content.get_name() in [it.get_name() for it in self.item_list]:
                     self.item_list = list(filter(lambda x: x.get_name() != content.get_name(), self.item_list))
-                print(f"{self.get_name()} is commiting.")
                 self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.COMMIT, content))
 
+            if message.get_performative() == MessagePerformative.ASK_WHY:
+                current_item = [item for item in self.item_list if item.get_name() == content.get_name()][0].get_name()
+                self.send_message(Message(self.get_name(), message.get_exp(), MessagePerformative.ARGUE, (current_item,self.support_proposal(current_item))))
+                print(f"{message.get_exp()} is asking why. {content}")
+
+            if message.get_performative() == MessagePerformative.ARGUE:
+                print(f"{message.get_exp()} is arguing. {content}")
+                # TODO : implement the argument agent
 
 
     def get_preference(self):
@@ -103,7 +107,7 @@ class ArgumentAgent(CommunicatingAgent):
 
         supportive_argument = argument.list_supporting_proposal(item, self.get_preference())
         if len(supportive_argument) > 0:
-            return supportive_argument[0].get_name()
+            return supportive_argument[0].name
         
         else:
             return ""
