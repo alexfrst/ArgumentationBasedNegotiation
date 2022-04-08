@@ -48,7 +48,8 @@ class Preferences:
         """Gets the value for a given item and a given criterion name.
         """
         for value in self.__criterion_value_list:
-            if value.get_item().get_name() == item and value.get_criterion_name() == criterion_name:
+            cur_item = value.get_item().get_name() if isinstance(item, str) else value.get_item()
+            if cur_item == item and value.get_criterion_name() == criterion_name:
                 return value.get_value()
         return None
 
