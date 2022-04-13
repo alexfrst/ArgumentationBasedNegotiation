@@ -15,3 +15,7 @@ class CoupleValue:
         # To be completed
         self.criterion_name = criterion_name
         self.value = value
+
+    def __repr__(self):
+        """Returns the string representation of the couple value ."""
+        return "(" + self.criterion_name + ":" + str(self.value) + ")"
