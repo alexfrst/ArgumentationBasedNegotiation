@@ -83,6 +83,10 @@ class Preferences:
         top_10_percent = sorted(item_list,key=lambda x:x.get_score(self), reverse=True)[:(max(len(item_list),10)//10)]
         return item.get_name() in [it.get_name() for it in top_10_percent]
 
+    def get_item_sorted_by_score(self, item_list):
+        sorted_items = sorted(item_list,key=lambda x:x.get_score(self), reverse=True)[:(max(len(item_list),10)//10)]
+        return list(sorted_items)
+
 
 if __name__ == '__main__':
     """Testing the Preferences class.
