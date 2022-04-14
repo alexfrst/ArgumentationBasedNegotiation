@@ -66,6 +66,6 @@ class Argument:
         for criterion in preferences.get_criterion_name_list():
             item_value = preferences.get_value(item, criterion)
             if item_value in [Value.BAD, Value.VERY_BAD]:
-                supporting_proposal.append(criterion)
+                supporting_proposal.append((criterion, item_value))
         return supporting_proposal
 
