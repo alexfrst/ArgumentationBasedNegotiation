@@ -246,7 +246,9 @@ class ArgumentAgent(CommunicatingAgent):
         current_item = [
             item for item in self.item_list if item.get_name() == content.get_name()
         ][0].get_name()
-        if self.support_proposal(current_item) == None:
+
+        possible_argument = self.support_proposal(current_item)
+        if possible_argument == None:
             log(
                 f"{self.get_name()} propose something else: {self.preference.most_preferred(self.item_list)}"
             )
@@ -272,7 +274,7 @@ class ArgumentAgent(CommunicatingAgent):
                     self.get_name(),
                     message.get_exp(),
                     MessagePerformative.ARGUE,
-                    self.argument_parsing(self.support_proposal(current_item)
+                    self.argument_parsing(possible_argument
                     ),
                 )
             )
@@ -285,8 +287,10 @@ class ArgumentAgent(CommunicatingAgent):
 
         # if the argument can be attacked by the agent
         if self.is_argument_attack(argument):
+            possible_argument = self.attack_argument(argument)
+
             # if we don't have counter arguments -> we accept the item
-            if self.attack_argument(argument) == None:
+            if possible_argument == None:
                 self.send_message(
                     Message(
                         self.get_name(),
@@ -301,7 +305,7 @@ class ArgumentAgent(CommunicatingAgent):
                     #If it was a for argument, we give a counter argument
                     response = self.argument_parsing(self.support_proposal(argument[0]))
                 else:
-                    response = self.argument_parsing(self.attack_argument(argument))
+                    response = self.argument_parsing(possible_argument)
 
                 self.send_message(
                     Message(
@@ -368,8 +372,8 @@ class ArgumentModel(Model):
 
 if __name__ == "__main__":
     # Init the model and the agents
-    first_player = "Bob"
-    second_player = "Alice"
+    first_player = "John"
+    second_player = "Bob"
     if len(sys.argv) > 1:
         first_player = sys.argv[1]
         second_player = sys.argv[2]
