@@ -2,8 +2,7 @@
 
 ## Introduction
 
-This project implements the modernisation of a negotiation protocol based on the proposed argumentation framework.
-Agents 
+This project implements a negotiation protocol based on the proposed argumentation framework. 
 
 Our agents are able to:
 - Communicate between each other
@@ -35,8 +34,29 @@ You can run negotiation in batch with stats computing with the folowing command:
 # Technical details
 
 ## Architecture
+```
+│   .gitignore
+│   pwArgumentAgent.py
+│   pwArgumentAgentBatch.py
+│   README.md
+│   requirements.txt
+│
+├───arguments
+├───communication
+│   ├───agent
+│   ├───mailbox
+│   ├───message
+│   └───preferences
+├───data
+└───figures
+```
 
-    TODO tree to be inserted
+- `pwArgumentAgent.py` Contains all the argumentation and interaction logic between agents.
+- `pwArgumentAgentBatch.py` Runs simulations in batch to make stats.
+- `arguments/` is a wrapper around the argumentation low level classes.
+- `communication/` contains the communication logic.
+- `data/` contains the agents preference profiles.
+- `figures/` contains the figures and the stats of models.
 
 ## Implementation details
 The most interesting part of this project is the implementation of the negotiation protocol in the `pwAgentArgument` file.
@@ -52,6 +72,13 @@ To avoid loops in the negotiation process, we have added some rules:
 
 ## Agents
 
-We have four agents, Alice, Bob, Eve and John. We made them argue two by two and we have assessed their performance.
+We have four agents, Alice, Bob, Eve and John. We made them argue two by two and we have assessed their performance. You can find their performance and the performance of the items.
+
+## Performance of the agents:
+
+![](figures/cumulative_wins_per_agent.png)
+
+## Perfomance if the items:
+![](figures/cumulative_wins_per_item.png)
 
 
