@@ -8,7 +8,9 @@ Alice,John,False,Electric Engine
 Eve,Bob,True,Fuel Cell
 Eve,Alice,True,Fuel Cell
 Eve,John,True,Fuel Cell
+John,Bob,True,Electric Engine
 John,Alice,False,Electric Engine
+John,Eve,True,Electric Engine
 Bob,Alice,True,Diesel Engine
 Bob,Eve,True,Diesel Engine
 Bob,John,True,Diesel Engine
@@ -18,7 +20,9 @@ Alice,John,False,Electric Engine
 Eve,Bob,True,Fuel Cell
 Eve,Alice,True,Fuel Cell
 Eve,John,True,Fuel Cell
+John,Bob,True,Electric Engine
 John,Alice,False,Electric Engine
+John,Eve,True,Electric Engine
 Bob,Alice,True,Diesel Engine
 Bob,Eve,True,Diesel Engine
 Bob,John,True,Diesel Engine
@@ -28,7 +32,9 @@ Alice,John,False,Electric Engine
 Eve,Bob,True,Fuel Cell
 Eve,Alice,True,Fuel Cell
 Eve,John,True,Fuel Cell
+John,Bob,True,Electric Engine
 John,Alice,False,Electric Engine
+John,Eve,True,Electric Engine
 Bob,Alice,True,Diesel Engine
 Bob,Eve,True,Diesel Engine
 Bob,John,True,Diesel Engine
@@ -38,7 +44,9 @@ Alice,John,False,Electric Engine
 Eve,Bob,True,Fuel Cell
 Eve,Alice,True,Fuel Cell
 Eve,John,True,Fuel Cell
+John,Bob,True,Electric Engine
 John,Alice,False,Electric Engine
+John,Eve,True,Electric Engine
 Bob,Alice,True,Diesel Engine
 Bob,Eve,True,Diesel Engine
 Bob,John,True,Diesel Engine
@@ -48,7 +56,9 @@ Alice,John,False,Electric Engine
 Eve,Bob,True,Fuel Cell
 Eve,Alice,True,Fuel Cell
 Eve,John,True,Fuel Cell
+John,Bob,True,Electric Engine
 John,Alice,False,Electric Engine
+John,Eve,True,Electric Engine
 Bob,Alice,True,Diesel Engine
 Bob,Eve,True,Diesel Engine
 Bob,John,True,Diesel Engine
@@ -58,7 +68,9 @@ Alice,John,False,Electric Engine
 Eve,Bob,True,Fuel Cell
 Eve,Alice,True,Fuel Cell
 Eve,John,True,Fuel Cell
+John,Bob,True,Electric Engine
 John,Alice,False,Electric Engine
+John,Eve,True,Electric Engine
 Bob,Alice,True,Diesel Engine
 Bob,Eve,True,Diesel Engine
 Bob,John,True,Diesel Engine
@@ -68,7 +80,9 @@ Alice,John,False,Electric Engine
 Eve,Bob,True,Fuel Cell
 Eve,Alice,True,Fuel Cell
 Eve,John,True,Fuel Cell
+John,Bob,True,Electric Engine
 John,Alice,False,Electric Engine
+John,Eve,True,Electric Engine
 Bob,Alice,True,Diesel Engine
 Bob,Eve,True,Diesel Engine
 Bob,John,True,Diesel Engine
@@ -78,4 +92,6 @@ Alice,John,False,Electric Engine
 Eve,Bob,True,Fuel Cell
 Eve,Alice,True,Fuel Cell
 Eve,John,True,Fuel Cell
+John,Bob,True,Electric Engine
 John,Alice,False,Electric Engine
+John,Eve,True,Electric Engine
