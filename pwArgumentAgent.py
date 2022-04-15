@@ -18,6 +18,11 @@ from communication.preferences.Preferences import (
     Value,
 )
 
+verbose = True
+
+def log(*args):
+    if verbose == True:
+        print(*args)
 
 class ArgumentAgent(CommunicatingAgent):
     """
@@ -32,6 +37,7 @@ class ArgumentAgent(CommunicatingAgent):
         self.counter_arguments = {}
         self.already_proposed = []
         self.number_commit = 0
+        self.winning_item = ""
 
     def step(self):
         super().step()
@@ -44,7 +50,7 @@ class ArgumentAgent(CommunicatingAgent):
 
         for message in list_messages:
 
-            print("\n", message)
+            log(message)
             content = message.get_content()  # content of the message
 
             if message.get_performative() == MessagePerformative.PROPOSE:
@@ -59,6 +65,7 @@ class ArgumentAgent(CommunicatingAgent):
                         content,
                     )
                 )
+                self.item_list = [item for item in self.item_list if item.get_name() != content ]
 
             if message.get_performative() == MessagePerformative.COMMIT:
                 self.handle_commit(message, content)
@@ -111,7 +118,7 @@ class ArgumentAgent(CommunicatingAgent):
                 argument.comparison_list = []
                 argument.add_premiss_couple_values(criterion.name, value.name)
                 self.arguments[item].append(argument)
-        
+
         #We still have arguments for the given item
         if len(self.arguments[item])>0:
             best_argument = self.arguments[item].pop(0)
@@ -126,7 +133,7 @@ class ArgumentAgent(CommunicatingAgent):
 
     def attack_argument(self, argument):
         item = argument[0]
-        
+
         #If no counter arguments exist against the given argument, we create them
         if item not in self.counter_arguments:
 
@@ -140,7 +147,7 @@ class ArgumentAgent(CommunicatingAgent):
                 argument.add_premiss_couple_values(criterion.name, value.name)
                 argument.comparison_list=[]
                 self.counter_arguments[item].append(argument)
-        
+
         if len(self.counter_arguments[item]) > 0:
             best_argument = self.counter_arguments[item].pop(0)
             return best_argument
@@ -191,7 +198,7 @@ class ArgumentAgent(CommunicatingAgent):
 
             # else he proposes something else
             else:
-                print(
+                log(
                     f"{self.get_name()} propose something else : {self.preference.most_preferred(self.item_list)}"
                 )
                 self.send_message(
@@ -217,23 +224,21 @@ class ArgumentAgent(CommunicatingAgent):
         """Handle the messages of type COMMIT"""
 
         item_name = content if isinstance(content, str) else content.get_name()
+        self.winning_item = content
         if item_name in [it.get_name() for it in self.item_list]:
             self.item_list = list(
                 filter(lambda x: x.get_name() != item_name, self.item_list)
             )
-        self.send_message(
-            Message(
-                self.get_name(), message.get_exp(), MessagePerformative.COMMIT, content
+            self.send_message(
+                Message(
+                    self.get_name(), message.get_exp(), MessagePerformative.COMMIT, content
+                )
             )
-        )
-        self.number_commit += 1
-
-        # if both the agents commited, we end the negotiation
-        if self.number_commit == 2:
-            print(
+        else:
+            log(
                 f"\nEnd of the negociation ! The agents agreed on the item : {item_name}"
             )
-            sys.exit()
+            self.model.termination = True
 
     def handle_askwhy(self, message, content):
         """Handle the messages of type ASK_WHY"""
@@ -242,7 +247,7 @@ class ArgumentAgent(CommunicatingAgent):
             item for item in self.item_list if item.get_name() == content.get_name()
         ][0].get_name()
         if self.support_proposal(current_item) == None:
-            print(
+            log(
                 f"{self.get_name()} propose something else: {self.preference.most_preferred(self.item_list)}"
             )
             unproposed_best_items = [
@@ -321,20 +326,23 @@ class ArgumentModel(Model):
     ArgumentModel which inherit from Model .
     """
 
-    def __init__(self):
+    def __init__(self, name1, name2):
+        self.termination = False
         self.schedule = RandomActivation(self)
         self.__messages_service = MessageService(self.schedule)
 
         MessageService.get_instance().set_instant_delivery(True)
 
-        alice = ArgumentAgent(0, self, "Alice")
+        alice = ArgumentAgent(0, self, name1)
         alice.generate_preferences()
         self.schedule.add(alice)
 
-        bob = ArgumentAgent(1, self, "Bob")
+        bob = ArgumentAgent(1, self, name2)
         bob.generate_preferences()
         self.schedule.add(bob)
         self.steps = 0
+        self.name1 = name1
+        self.name2 = name2
 
         self.running = True
 
@@ -342,10 +350,8 @@ class ArgumentModel(Model):
         self.__messages_service.dispatch_messages()
         self.schedule.step()
         if self.steps == 0:
-            first_agent = random.choice(self.schedule.agents)
-            second_agent = [ag for ag in self.schedule.agents if ag != first_agent][0]
-
-
+            first_agent = self.schedule.agents[0]
+            second_agent = self.schedule.agents[1]
 
             first_agent.send_message(
                 Message(
@@ -362,9 +368,30 @@ class ArgumentModel(Model):
 
 if __name__ == "__main__":
     # Init the model and the agents
-    model = ArgumentModel()
+    first_player = "Bob"
+    second_player = "Alice"
+    if len(sys.argv) > 1:
+        first_player = sys.argv[1]
+        second_player = sys.argv[2]
+        verbose = False
+
+
+    model = ArgumentModel(first_player, second_player)
+
+    first_agent = model.schedule.agents[0]
+    most_prefered = first_agent.preference.most_preferred(first_agent.item_list).get_name()
 
     step = 0
     while step < 10:
         model.step()
+        if model.termination:
+            break
         step += 1
+
+    while not model.termination:
+        model.step()
+    is_win = first_agent.winning_item == most_prefered
+
+    if len(sys.argv) > 1:
+        file = open("figures/results.csv", "a")
+        file.write(f"{first_player},{second_player},{is_win},{most_prefered}\n")
