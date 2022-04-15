@@ -42,16 +42,6 @@ class ArgumentAgent(CommunicatingAgent):
             if agent.get_name() != self.get_name()
         ][0]
 
-        if len(list_messages) == 0 and self.get_name() == "Alice":
-            self.send_message(
-                Message(
-                    self.get_name(),
-                    other,
-                    MessagePerformative.PROPOSE,
-                    self.preference.most_preferred(self.item_list),
-                )
-            )
-
         for message in list_messages:
 
             print(message)
@@ -134,7 +124,7 @@ class ArgumentAgent(CommunicatingAgent):
 
         # print(f"{self.arguments[argument.item][0].item}==>{criterion.criterion_name} = {criterion.value}")
 
-        return (criterion.criterion_name, criterion.value)
+        return (argument.boolean_decision, criterion.criterion_name, criterion.value)
 
     def attack_argument(self, item, criterion_couple_values):
 
@@ -148,7 +138,6 @@ class ArgumentAgent(CommunicatingAgent):
             self.counter_arguments[item] = argument
 
         if len(self.counter_arguments[item].couple_values_list) > 0:
-
             return self.counter_arguments[item]
 
         return None
@@ -166,8 +155,8 @@ class ArgumentAgent(CommunicatingAgent):
 
         # if its value for the given criterion is less than the one of the agent
         if (
-            Value[value].value
-            > self.preference.get_value(item, CriterionName[criterion]).value
+                Value[value].value
+                > self.preference.get_value(item, CriterionName[criterion]).value
         ):
             return False
         return True
@@ -180,8 +169,8 @@ class ArgumentAgent(CommunicatingAgent):
 
             # if the proposed item is the favorite item of the agent who receives the proposal -> he accepts the item
             if (
-                content.get_name()
-                == self.preference.most_preferred(self.item_list).get_name()
+                    content.get_name()
+                    == self.preference.most_preferred(self.item_list).get_name()
             ):
 
                 self.send_message(
@@ -277,11 +266,11 @@ class ArgumentAgent(CommunicatingAgent):
                     ),
                 )
             )
-            print(str(self.arguments["Electric Engine"].couple_values_list))
 
     def handle_argue(self, message, content):
         """Handle the messages of type ARGUE"""
-        item, criterion_couple = content
+        item, argument = content
+        _ , *criterion_couple = argument
 
         # if the argument can be attacked by the agent
         if self.is_argument_attack(item, criterion_couple):
@@ -329,35 +318,47 @@ class ArgumentModel(Model):
         self.schedule = RandomActivation(self)
         self.__messages_service = MessageService(self.schedule)
 
-        # To be completed
-        #
-        # a = ArgumentAgent (id , " agent_name ")
-        # a. generate_preferences ( preferences )
-        # self . schedule .add(a)
-        # ...
+        MessageService.get_instance().set_instant_delivery(True)
+
+        alice = ArgumentAgent(0, self, "Alice")
+        alice.generate_preferences()
+        self.schedule.add(alice)
+
+        bob = ArgumentAgent(1, self, "Bob")
+        bob.generate_preferences()
+        self.schedule.add(bob)
+        self.steps = 0
 
         self.running = True
 
     def step(self):
         self.__messages_service.dispatch_messages()
         self.schedule.step()
+        if self.steps == 0:
+            first_agent = random.choice(self.schedule.agents)
+            second_agent = [ag for ag in self.schedule.agents if ag != first_agent][0]
+
+
+
+            first_agent.send_message(
+                Message(
+                    first_agent.get_name(),
+                    second_agent.get_name(),
+                    MessagePerformative.PROPOSE,
+                    first_agent.preference.most_preferred(first_agent.item_list),
+                )
+            )
+            self.running = False
+
+        self.steps += 1
 
 
 if __name__ == "__main__":
     # Init the model and the agents
-    argument_model = ArgumentModel()
-    MessageService.get_instance().set_instant_delivery(True)
-
-    alice = ArgumentAgent(0, argument_model, "Alice")
-    alice.generate_preferences()
-    argument_model.schedule.add(alice)
-
-    bob = ArgumentAgent(1, argument_model, "Bob")
-    bob.generate_preferences()
-    argument_model.schedule.add(bob)
+    model = ArgumentModel()
 
     step = 0
     while step < 10:
         print("step=", step)
-        argument_model.step()
+        model.step()
         step += 1
