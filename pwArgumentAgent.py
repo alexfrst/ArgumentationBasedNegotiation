@@ -44,7 +44,7 @@ class ArgumentAgent(CommunicatingAgent):
 
         for message in list_messages:
 
-            print(message)
+            print("\n", message)
             content = message.get_content()  # content of the message
 
             if message.get_performative() == MessagePerformative.PROPOSE:
@@ -94,72 +94,79 @@ class ArgumentAgent(CommunicatingAgent):
         """
         Used when the agent receives " ASK_WHY " after having proposed an item
         : param item : str - name of the item which was proposed
-        : return : Argument - an argument object which contains the list of all the arguments available to defend the given item
+        : return : Argument - the best argument to defend the given item
         """
 
-        # if we never created argument for this item, we create it
+        # if we never created arguments for this item, we create them
         if item not in self.arguments:
-            argument = Argument(True, item)
-            supportive_argument = argument.list_supporting_proposal(
+
+            global_argument = Argument(True, item)
+            #We create the list of supportive arguments for the given item
+            supportive_argument = global_argument.list_supporting_proposal(
                 item, self.get_preference()
             )
+            self.arguments[item] = []
             for criterion, value in supportive_argument:
+                argument = Argument(True, item)
+                argument.comparison_list = []
                 argument.add_premiss_couple_values(criterion.name, value.name)
-            self.arguments[item] = argument
-
-        # if we still have arguments left in our list
-        if len(self.arguments[item].couple_values_list) > 0:
-            return self.arguments[item]
+                self.arguments[item].append(argument)
+        
+        #We still have arguments for the given item
+        if len(self.arguments[item])>0:
+            best_argument = self.arguments[item].pop(0)
+            return best_argument
 
         return None
 
     def argument_parsing(self, argument: Argument):
-        """Parse an argument and return the strongest one"""
+        """Parse an argument"""
 
-        # if it's a counter argument
-        if argument.boolean_decision == False:
-            criterion = self.counter_arguments[argument.item].couple_values_list.pop(0)
-        else:
-            criterion = self.arguments[argument.item].couple_values_list.pop(0)
+        return argument.item, argument.boolean_decision, argument.couple_values_list, argument.comparison_list
 
-        # print(f"{self.arguments[argument.item][0].item}==>{criterion.criterion_name} = {criterion.value}")
-
-        return (argument.boolean_decision, criterion.criterion_name, criterion.value)
-
-    def attack_argument(self, item, criterion_couple_values):
-
+    def attack_argument(self, argument):
+        item = argument[0]
+        
+        #If no counter arguments exist against the given argument, we create them
         if item not in self.counter_arguments:
-            argument = Argument(False, item)
-            unsupported_argument = argument.list_attacking_proposal(
+
+            global_argument = Argument(False, item)
+            unsupported_argument = global_argument.list_attacking_proposal(
                 item, self.get_preference()
             )
+            self.counter_arguments[item] = []
             for criterion, value in unsupported_argument:
+                argument = Argument(False, item)
                 argument.add_premiss_couple_values(criterion.name, value.name)
-            self.counter_arguments[item] = argument
-
-        if len(self.counter_arguments[item].couple_values_list) > 0:
-            return self.counter_arguments[item]
+                argument.comparison_list=[]
+                self.counter_arguments[item].append(argument)
+        
+        if len(self.counter_arguments[item]) > 0:
+            best_argument = self.counter_arguments[item].pop(0)
+            return best_argument
 
         return None
 
-    def is_argument_attack(self, item, criterion_couple_values):
+    def is_argument_attack(self, argument):
         """Boolean which indicates if an argument can be attacked or not and fill the counter arguments"""
-        criterion, value = criterion_couple_values
+        item, boolean_decision, criterion_couple, criterion_comparison = argument
+        criterion = criterion_couple[0].criterion_name
+        value = criterion_couple[0].value
 
         importance = [
             crit.name for crit in self.preference.get_criterion_name_list()
         ].index(criterion)
         # if the criterion is not important for him (not in the 50% preferred criterion)
         if importance > len(self.preference.get_criterion_name_list()) / 2:
-            return False
+            return True
 
         # if its value for the given criterion is less than the one of the agent
         if (
                 Value[value].value
                 > self.preference.get_value(item, CriterionName[criterion]).value
         ):
-            return False
-        return True
+            return True
+        return False
 
     def handle_propose(self, message, content):
         """Handle the messages of type PROPOSE"""
@@ -260,43 +267,43 @@ class ArgumentAgent(CommunicatingAgent):
                     self.get_name(),
                     message.get_exp(),
                     MessagePerformative.ARGUE,
-                    (
-                        current_item,
-                        self.argument_parsing(self.support_proposal(current_item)),
+                    self.argument_parsing(self.support_proposal(current_item)
                     ),
                 )
             )
 
     def handle_argue(self, message, content):
         """Handle the messages of type ARGUE"""
-        item, argument = content
-        _ , *criterion_couple = argument
+
+        #item, boolean_decision, criterion_couple, criterion_comparison = content
+        argument = content
 
         # if the argument can be attacked by the agent
-        if self.is_argument_attack(item, criterion_couple):
+        if self.is_argument_attack(argument):
             # if we don't have counter arguments -> we accept the item
-            if self.attack_argument(item, criterion_couple) == None:
+            if self.attack_argument(argument) == None:
                 self.send_message(
                     Message(
                         self.get_name(),
                         message.get_exp(),
                         MessagePerformative.ACCEPT,
-                        item,
+                        argument[0],
                     )
                 )
             # we give a counter argument
             else:
+                if argument[1] == False:
+                    #If it was a for argument, we give a counter argument
+                    response = self.argument_parsing(self.support_proposal(argument[0]))
+                else:
+                    response = self.argument_parsing(self.attack_argument(argument))
+
                 self.send_message(
                     Message(
                         self.get_name(),
                         message.get_exp(),
                         MessagePerformative.ARGUE,
-                        (
-                            item,
-                            self.argument_parsing(
-                                self.attack_argument(item, criterion_couple)
-                            ),
-                        ),
+                        response,
                     )
                 )
 
@@ -304,7 +311,7 @@ class ArgumentAgent(CommunicatingAgent):
         else:
             self.send_message(
                 Message(
-                    self.get_name(), message.get_exp(), MessagePerformative.ACCEPT, item
+                    self.get_name(), message.get_exp(), MessagePerformative.ACCEPT, argument[0]
                 )
             )
 
@@ -359,6 +366,5 @@ if __name__ == "__main__":
 
     step = 0
     while step < 10:
-        print("step=", step)
         model.step()
         step += 1
