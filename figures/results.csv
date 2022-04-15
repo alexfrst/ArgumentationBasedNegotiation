@@ -1,0 +1,6 @@
+agent1,agent2,iswin,item
+Bob,Alice,True,Diesel Engine
+Bob,John,True,Diesel Engine
+Alice,Eve,True,Electric Engine
+Alice,John,False,Electric Engine
+Eve,John,True,Fuel Cell
